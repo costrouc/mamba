@@ -5,6 +5,7 @@
 // The full license is in the file LICENSE, distributed with this software.
 
 #include <list>
+#include <iostream>
 
 #include <fmt/format.h>
 #include <solv/evr.h>
@@ -155,6 +156,7 @@ namespace mamba
         {
             throw std::runtime_error("libsolv error: could not create matchspec from string");
         }
+        std::cout << "\n>>> matchspec2id: '" << ms << "' " << id << std::endl;
         return id;
     }
 

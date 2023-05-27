@@ -6,6 +6,8 @@
 
 #include <sstream>
 #include <stdexcept>
+#include <iostream>
+#include <list>
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
@@ -256,6 +258,7 @@ namespace mamba
 
         // conda_build_form does **NOT** contain the channel info
         Id match = pool_conda_matchspec(pool, ms.conda_build_form().c_str());
+        std::cout << "\n>>> matchspec2id: '" << ms.conda_build_form().c_str() << "' " << match << std::endl;
 
         const Channel& c = make_channel(ms.channel);
         for (Id* wp = pool_whatprovides_ptr(pool, match); *wp; wp++)
@@ -274,6 +277,7 @@ namespace mamba
         // Poor man's ms repr to match waht the user provided
         std::string const repr = fmt::format("{}::{}", ms.channel, ms.conda_build_form());
         Id repr_id = pool_str2id(pool, repr.c_str(), 1);
+        std::cout << "\n>>> matchspec2id: '" << repr.c_str() << "' " << repr_id << std::endl;
         // We add a new entry into the whatprovides to reflect the channel specific job
         pool_set_whatprovides(pool, repr_id, offset);
         // We ask to install that new entry
@@ -340,6 +344,7 @@ namespace mamba
             }
         }
         Id inst_id = pool_conda_matchspec(m_pool, ms.conda_build_form().c_str());
+        std::cout << "\n>>> matchspec2id: '" << ms.conda_build_form().c_str() << "' " << inst_id << std::endl;
         m_jobs->push_back(job_flag | SOLVER_SOLVABLE_PROVIDES, inst_id);
     }
 
@@ -371,11 +376,13 @@ namespace mamba
                 if (!ms.is_simple())
                 {
                     Id inst_id = pool_conda_matchspec(m_pool, ms.conda_build_form().c_str());
+                    std::cout << "\n>>> matchspec2id: '" << ms.conda_build_form().c_str() << "' " << inst_id << std::endl;
                     m_jobs->push_back(SOLVER_INSTALL | SOLVER_SOLVABLE_PROVIDES, inst_id);
                 }
                 if (ms.channel.empty())
                 {
                     Id update_id = pool_conda_matchspec(m_pool, ms.name.c_str());
+                    std::cout << "\n>>> matchspec2id: '" << ms.name.c_str() << "' " << update_id << std::endl;
                     m_jobs->push_back(job_flag | SOLVER_SOLVABLE_PROVIDES, update_id);
                 }
                 else
@@ -403,6 +410,7 @@ namespace mamba
                 // Todo remove double parsing?
                 LOG_INFO << "Adding job: " << ms.conda_build_form();
                 Id inst_id = pool_conda_matchspec(m_pool, ms.conda_build_form().c_str());
+                std::cout << "\n>>> matchspec2id: '" << ms.conda_build_form().c_str() << "' " << inst_id << std::endl;
                 m_jobs->push_back(job_flag | SOLVER_SOLVABLE_PROVIDES, inst_id);
             }
         }
@@ -412,6 +420,7 @@ namespace mamba
     {
         MatchSpec ms(job);
         Id inst_id = pool_conda_matchspec(m_pool, ms.conda_build_form().c_str());
+        std::cout << "\n>>> matchspec2id: '" << ms.conda_build_form().c_str() << "' " << inst_id << std::endl;
         m_jobs->push_back(SOLVER_INSTALL | SOLVER_SOLVABLE_PROVIDES, inst_id);
     }
 
@@ -446,6 +455,7 @@ namespace mamba
         // }
 
         Id match = pool_conda_matchspec(pool, ms.conda_build_form().c_str());
+        std::cout << "\n>>> matchspec2id: '" << ms.conda_build_form().c_str() << "' " << match << std::endl;
 
         std::set<Id> matching_solvables;
         const Channel& c = make_channel(ms.channel);
@@ -488,6 +498,7 @@ namespace mamba
         }
 
         Id d = pool_queuetowhatprovides(pool, selected_pkgs.raw());
+        std::cout << "\n>>> matchspec2id: '" << selected_pkgs.raw() << "' " << d << std::endl;
         m_jobs->push_back(SOLVER_LOCK | SOLVER_SOLVABLE_ONE_OF, d);
     }
 
@@ -570,6 +581,16 @@ namespace mamba
     {
         m_solver.reset(solver_create(m_pool));
         set_flags(m_flags);
+
+        std::cout << "\n>>> M_FLAGS: ";
+        for (auto v : m_flags)
+          std::cout << v.first << " " << v.second << " ";
+        std::cout << std::endl;
+
+        std::cout << "\n>>> M_JOBS: ";
+        const auto l = std::list<::Id>(m_jobs->begin(), m_jobs->end());
+        for (auto v : l)
+          std::cout << v << " ";
 
         solver_solve(m_solver.get(), m_jobs->raw());
         m_is_solved = true;
