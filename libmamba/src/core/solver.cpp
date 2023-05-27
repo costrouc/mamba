@@ -309,7 +309,11 @@ namespace mamba
             {
                 // ignoring update specs here for now
                 if (!ms.is_simple())
-                {
+                  {
+                    std::string old_channel = ms.channel;
+                    ms.channel.clear();
+                    ::Id const job_id = m_pool.matchspec2id(ms);
+                    ms.channel = old_channel;
                     m_jobs->push_back(SOLVER_INSTALL | SOLVER_SOLVABLE_PROVIDES, job_id);
                 }
                 m_jobs->push_back(job_flag | SOLVER_SOLVABLE_PROVIDES, job_id);
