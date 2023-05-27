@@ -6,6 +6,8 @@
 
 #include <sstream>
 #include <stdexcept>
+#include <iostream>
+#include <list>
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
@@ -475,6 +477,16 @@ namespace mamba
     {
         m_solver.reset(solver_create(m_pool));
         set_flags(m_flags);
+
+        std::cout << "\n>>> M_FLAGS: ";
+        for (auto v : m_flags)
+          std::cout << v.first << " " << v.second << " ";
+        std::cout << std::endl;
+
+        std::cout << "\n>>> M_JOBS: ";
+        const auto l = std::list<::Id>(m_jobs->begin(), m_jobs->end());
+        for (auto v : l)
+          std::cout << v << " ";
 
         solver_solve(m_solver.get(), m_jobs->raw());
         m_is_solved = true;
